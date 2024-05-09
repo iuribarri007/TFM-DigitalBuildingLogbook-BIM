@@ -21,7 +21,7 @@
     --category-container-height:8rem;
     --category-container-width:50vw;
     --category-btn-height:6rem;
-    --category-btn-font-size:16px;
+    --category-btn-font-size:14px;
     --main-width:100%;
     --main-height:85vh;
     --main-table-width:30rem;
@@ -132,13 +132,45 @@
 .dbl-category-btn:hover{
     background-color: var(--color-c2);
 }
+.nav-phases{
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin: 10px 10px 10px 10px;
+}
+.nav-phases>.nav-phases-selected{
+    background-color: var(--color-grey);
+    height: auto;
+}
+.nav-phases>.nav-phases-selected >span{
+    font-size: var(--category-btn-font-size);
+    padding: 0.2rem;
+}
+.phases-menu{
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 0;
+    z-index: 1;
+    top: 70px;
+}
+.phase {
+    position: relative;
+    padding: 5px;
+    cursor: pointer;
+    font-size: var(--font-sm);
+  }
+  phase:hover{
+    color: var(--color-c2);
+  }
+
 /*/Main/*/
 .main{
-    position: relative;
     flex-direction: row;
     height: var(--main-height);
     width: 100vw;
-    background-color:white;
+    background-color:transparent;
+    z-index: 0;
 }
 /*/Main-Table/*/
 .main-table-container{
@@ -157,6 +189,8 @@
 .main-table-container>.tableSection-header{
     position:sticky;
     display: flex;
+    align-items: center;
+    height: var(--header-height);
     background-color: red;
 }
 .main-table-container>.tableSection-body{
