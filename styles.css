@@ -149,10 +149,10 @@
 .phases-menu{
     position: fixed;
     background-color: white;
+    z-index: 1;
     border: 1px solid #ccc;
     padding: 0;
-    z-index: 1;
-    top: 70px;
+    top: 80px;
 }
 .phase {
     position: relative;
@@ -160,7 +160,7 @@
     cursor: pointer;
     font-size: var(--font-sm);
   }
-  phase:hover{
+.phase:hover{
     color: var(--color-c2);
   }
 
@@ -190,8 +190,8 @@
     position:sticky;
     display: flex;
     align-items: center;
-    height: var(--header-height);
-    background-color: red;
+    height: var(--category-container-height);
+    background-color: var(--color-c3);
 }
 .main-table-container>.tableSection-body{
     position: relative;

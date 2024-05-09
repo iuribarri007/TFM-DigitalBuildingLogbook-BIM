@@ -1,7 +1,8 @@
 // IFC properties to table logic//
 import { a2 } from "./indexDBLStructure";
 import { a3 } from "./indexDBLStructure";
-import { projectPhasesArray} from './infoProject'
+import { Button } from "openbim-components";
+import { func } from "three/examples/jsm/nodes/Nodes.js";
 //Add event listener//
 
 interface Subcategory {
@@ -68,10 +69,3 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /*/
 
-const phases = document.querySelectorAll('.phase')
-phases.forEach(phase=>{
-  const phaseId= phase.id
-  if(phaseId){
-
-  }
-})
