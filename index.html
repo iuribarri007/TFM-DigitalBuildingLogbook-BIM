@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="https:/fonts.googleapis.com/icon?family=Material+Icons+Round">
+    <link rel="stylesheet" href="https:/fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="styles.css">
+  
+  </head>
+  <body>
+    <header class="header">
+      <button class="home">
+        <div class="home-wrapper">
+          <div class="logo-container">
+            <img
+              id="web-logo"
+              src="/resources/DBL_OpenBIM.png"
+              alt="No IMG"
+            />
+          </div>
+          <div class="title-container">
+           <h4 class="title">
+            <span class="title-word">Digital</span>
+            <span class="title-word">Building</span>
+            <span class="title-word">LogBook</span>
+          </h4>
+          </div>
+      </button>
+      <div class="nav-category">
+        <div class="dbl-category-wrapper">
+          <button class="dbl-category-btn" id="a1">
+            <h4>General and administrative information</h4>
+          </button>
+          <button class="dbl-category-btn" id="a2">
+            <h4>Construction information and materials</h4>
+          </button>
+          <button class="dbl-category-btn" id="a3">
+            <h4>Building technical systems and smart readiness</h4>
+          </button>
+          <button class="dbl-category-btn" id="a4">
+            <h4>Energy performance operation and use</h4>
+          </button>
+          <button class="dbl-category-btn" id="a5">
+            <h4>Economic and financial information</h4>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="main">
+      <div id="viewer-container" class="dashboard-card" style="min-width: 0; "></div>
+      <div class="main-table-container" id="table-container">
+        <div class="tableSection-header">
+          <h4 class="tableSection-title" id="tablesection-title">This is a example title</h4>
+          <button class="close-btn">&times;</button>
+        </div>
+        <div class="tableSection-body" id="tableSection-body">
+          <div class="tableSection" id="tableSectionDemo">
+            <button class="tableSubcategory">
+              <div class="tableSubcategory-content">This is an example</div>
+            </button>
+            <table class="tableComplete">
+              <thead>
+                <tr class="tableRow">
+                  <th class="tableIndicator" id="tableIndicatorDemo">Indicator 1 which can be long</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="tableRow">
+                  <td class="tableElement">Element 1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+      
+      
+    </main>
+  </body>
+  <script type="module" src="index.ts"></script>
+  <script type="module" src="indexDBL.ts"></script>
+</html>
