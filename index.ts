@@ -4,6 +4,8 @@ import * as WEBIFC from "web-ifc"
 import { FragmentsGroup } from "bim-fragment"
 import { Fragment } from "bim-fragment"
 import { or } from "three/examples/jsm/nodes/Nodes.js"
+//
+import { projectPhasesArray} from './infoProject'
 
 const viewer = new OBC.Components()
 const sceneComponent = new OBC.SimpleScene(viewer)
@@ -66,7 +68,7 @@ interface entityPsetProps{
 
 function getEntityIds(obj: any):any []| undefined {
   for (let ifcType in obj.entities) {
-    if(ifcType=='IFCWALL'){
+    if(ifcType=='IFCWALL'||ifcType==="IFCWALLSTANDARDCASE"){
       const ifcWall=( obj.entities[ifcType]);
       for (let entitiesWall in ifcWall){
         let idSetWall=ifcWall[entitiesWall]
@@ -109,8 +111,8 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
   const properties = await model.properties;
   
   for (let id in array) {
-    let modelEntityPsetValue ={}
-    let modelEntityPset={modelEntityPsetValue}
+    
+    let modelEntityPset={}
     let modelEntity = {modelEntityPset}
     //Defining the expressID of the element being proccesses
     const expressID = array[id]
@@ -123,10 +125,11 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
     modelEntity[attributes]={
       "GlobalId": idProperties.GlobalId.value,
       "Name":idProperties.Name.value,
-      "PredefinedType":idProperties.PredefinedType.value,
+      //"PredefinedType":idProperties.PredefinedType.value,
       "Tag": idProperties.Tag.value,
     }
     //getting the relation map with "IfcRelDefinesByProperties", the Pset
+    
     OBC.IfcPropertiesUtils.getRelationMap(
       properties,
       WEBIFC.IFCRELDEFINESBYPROPERTIES,
@@ -138,6 +141,7 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
           //console.log(expressID,setID,set)
           if(set.HasProperties.length!==0){
             //console.log(set)
+            let modelEntityPsetValue ={}
             let modelEntityPsetKey= properties[set.expressID].Name.value
             modelEntity[modelEntityPsetKey] = {
               "id": set.expressID,
@@ -149,10 +153,9 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
                   const pId= set.HasProperties[p].value
                   const pName= properties[pId].Name.value
                   const pValue= properties[pId].NominalValue.value
-                  modelEntityPsetValue[pId]=pValue
-                  console.log (expressID,setID,pId,pName,pValue)
+                  modelEntityPsetValue[pName]=pValue
+                
                 }
-
               }
           }  
           //OBC.IfcPropertiesUtils.getPsetProps(
@@ -174,7 +177,7 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
       else {return}  
       }
     )
-      
+
         wallArray.push(modelEntity)
       }
       console.log(wallArray)
@@ -197,16 +200,19 @@ window.ondblclick = () => {
   clipper.create();
   }
 //Load fragments
-async function loadIfcAsFragments() {
-  const file = await fetch('ifc/00_PRUEBA.ifc');
+async function loadIfcAsFragments(ifcModelFile) {
+  
+  const file = await fetch(ifcModelFile);
   const data = await file.arrayBuffer();
   const buffer = new Uint8Array(data);
   const model = await ifcLoader.load(buffer, file.url);
   scene.add(model);
-  const properties= model.properties
+  const properties= model.properties 
+  console.log(properties)
   highlighter.update()
   //Classify the entities
   classifier.byEntity(model)
+  classifier.byStorey(model)
   const objProp = classifier.get()
   await objProp
   console.log(objProp)
@@ -216,5 +222,25 @@ async function loadIfcAsFragments() {
   console.log(wallIdArray)
   await getEntityProperties(model, wallIdArray)
 }
-loadIfcAsFragments()
+
+function ifcLoadEvent(event){
+  let buttonId = event.target.id
+  let phase= projectPhasesArray.find(phase=> phase.id===parseInt(buttonId))
+  if(phase){
+    let ifcModel= phase.ifcModel
+    loadIfcAsFragments(ifcModel)
+    console.log("IFC successfully loaded")
+  } else{
+    console.log ("Not found")
+  }
+}
+const phasesBtns = document.querySelectorAll('.phase')
+function printId(event){
+  let buttonId = event.target.id
+  console.log(buttonId)
+}
+phasesBtns.forEach(button=>{
+  button.addEventListener("click",ifcLoadEvent)
+});
+
 
