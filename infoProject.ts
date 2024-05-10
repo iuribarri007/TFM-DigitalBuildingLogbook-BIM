@@ -6,6 +6,7 @@ interface ObjectPhaseInfo{
     ifcModel:any;
 
 }
+
 export const projectPhasesArray:ObjectPhaseInfo[]=[]
 
 let phase0:ObjectPhaseInfo ={
@@ -18,7 +19,7 @@ let phase1:ObjectPhaseInfo ={
     id:1,
     year:2023,
     description: "asdnasd",
-    ifcModel: "ifc/ARM-MAAB-ARM01-ZZZ-M3D-ARQ-ZZZ-TFM_custom.ifc"
+    ifcModel: "ifc/ARM-MAAB-ARM01-ZZZ-M3D-ARQ-ZZZ-TFM.ifc"
 }
 let phase2:ObjectPhaseInfo ={
     id:2,
