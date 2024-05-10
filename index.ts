@@ -47,25 +47,22 @@ ifcLoader.settings.webIfc.OPTIMIZE_PROFILES = true;
 
 //Setting a model
 //modelEntitiesIDs!
-let wallIdArray: any= [];
-let windowIdArray:any=[];
-let floorIdArray:any=[];
-
+const wallIdArray: any= [];
+const windowIdArray:any=[];
+const floorIdArray:any=[];
+const roofIdArray:any =[]
 //modelEntities
-let wallArray:any=[];
-let windowArray:any=[];
-let floorArray:any=[];
+const wallArray:any=[];
+const windowArray:any=[];
+const floorArray:any=[];
+const roofArray:any=[];
+//externalModelEntities
+const externalWallArray:any=[];
+const externalWindowArray:any=[];
+const externalFloorArray:any=[];
+const externalRoofArray:any=[];
 
-
-interface entityPset{
-  id:number;
-  name:string;
-  values:{}
-}
-interface entityPsetProps{
-  id:string
-}
-
+//get the IDs of different types
 function getEntityIds(obj: any):any []| undefined {
   for (let ifcType in obj.entities) {
     if(ifcType=='IFCWALL'||ifcType==="IFCWALLSTANDARDCASE"){
@@ -106,12 +103,9 @@ function getEntityIds(obj: any):any []| undefined {
 }
 
 //getting the elements of the model with the psets and properties
-
 async function getEntityProperties(model: FragmentsGroup, array: number[]) {
   const properties = await model.properties;
-  
   for (let id in array) {
-    
     let modelEntityPset={}
     let modelEntity = {modelEntityPset}
     //Defining the expressID of the element being proccesses
@@ -129,18 +123,15 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
       "Tag": idProperties.Tag.value,
     }
     //getting the relation map with "IfcRelDefinesByProperties", the Pset
-    
     OBC.IfcPropertiesUtils.getRelationMap(
       properties,
       WEBIFC.IFCRELDEFINESBYPROPERTIES,
       (setID, relatedIDs)=>{
         const set = properties[setID]
         const workingIDs= relatedIDs.filter(id => id===expressID)
-        
         if( set.type===WEBIFC.IFCPROPERTYSET && workingIDs.length!==0){
           //console.log(expressID,setID,set)
           if(set.HasProperties.length!==0){
-            //console.log(set)
             let modelEntityPsetValue ={}
             let modelEntityPsetKey= properties[set.expressID].Name.value
             modelEntity[modelEntityPsetKey] = {
@@ -154,29 +145,14 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
                   const pName= properties[pId].Name.value
                   const pValue= properties[pId].NominalValue.value
                   modelEntityPsetValue[pName]=pValue
-                
                 }
               }
           }  
-          //OBC.IfcPropertiesUtils.getPsetProps(
-          //  properties,
-          //  setID,
-          //  (propID) =>{
-          //    let entityProps= properties[propID]; 
-          //    const entityPropName= entityProps.Name.value;
-          //    const entityPropValue= entityProps.NominalValue.value;
-          //    //modelEntityPset.modelEntityPsetValue[entityPropName]=entityPropValue
-          //      //const pName= properties[propID].Name.value
-          //      //const pValue= properties[propID].NominalValue.value
-          //      //modelEntityPsetValue[pName]=pValue
-          //    //modelEntityPsetValue[entityPropName]
-          //    //console.log(expressID,setID,propID,entityPropName,entityPropValue)//ESTE ESTÁ BIEN          
-          //)
-          
         }
       else {return}  
       }
     )
+    console.log(idProperties.type)
 
         wallArray.push(modelEntity)
       }
