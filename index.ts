@@ -103,8 +103,9 @@ function getEntityIds(obj: any):any []| undefined {
 }
 
 //getting the elements of the model with the psets and properties
-async function getEntityProperties(model: FragmentsGroup, array: number[]) {
+async function getEntityProperties(model: FragmentsGroup, array: any[]) {
   const properties = await model.properties;
+ 
   for (let id in array) {
     let modelEntityPset={}
     let modelEntity = {modelEntityPset}
@@ -152,7 +153,6 @@ async function getEntityProperties(model: FragmentsGroup, array: number[]) {
       else {return}  
       }
     )
-    console.log(idProperties.type)
 
         wallArray.push(modelEntity)
       }
@@ -177,14 +177,12 @@ window.ondblclick = () => {
   }
 //Load fragments
 async function loadIfcAsFragments(ifcModelFile) {
-  
   const file = await fetch(ifcModelFile);
   const data = await file.arrayBuffer();
   const buffer = new Uint8Array(data);
   const model = await ifcLoader.load(buffer, file.url);
   scene.add(model);
   const properties= model.properties 
-  console.log(properties)
   highlighter.update()
   //Classify the entities
   classifier.byEntity(model)
