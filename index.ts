@@ -51,6 +51,11 @@ const wallIdArray: any= [];
 const windowIdArray:any=[];
 const floorIdArray:any=[];
 const roofIdArray:any =[]
+//modelEntitiesIds but with objects
+const wallIdList:any={}
+const windowIdList:any={}
+const floorIdList:any={}
+const roofIdList:any={}
 //modelEntities
 const wallArray:any=[];
 const windowArray:any=[];
@@ -61,17 +66,92 @@ const externalWallArray:any=[];
 const externalWindowArray:any=[];
 const externalFloorArray:any=[];
 const externalRoofArray:any=[];
+/*/ for (let ifcType in obj.entities) {
+    if(ifcType=='IFCWALL'||ifcType==="IFCWALLSTANDARDCASE"){
+      const ifcWall=obj.entities[ifcType];
+      for (let entitiesWall in ifcWall){
+        let idSetWall=ifcWall[entitiesWall]
+        for (let wallValue of idSetWall){
+          const wallValueNum:number = parseInt(wallValue)/*/
+
+function isValuePresent(obj: Record<string, any[]>, value: any): boolean {
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const array = obj[key];
+            if (array.includes(value)) {
+                return true;
+            }
+        }
+    }
+  return false;
+}
+
+async function getEntityIdsByLevel(model: FragmentsGroup, obj:any){
+  const properties= model.properties
+  if(properties===undefined){return}
+  const storeys= obj.storeys
+  for (let level in storeys){
+    //console.log(level)
+    let wallLevelArray:any =[]
+    let windowLevelArray:any= []
+    let floorLevelArray:any= []
+    let roofLevelArray:any= []
+    wallIdList[level]=wallLevelArray
+    windowIdList[level]=windowLevelArray
+    floorIdList[level]=floorLevelArray
+    roofIdList[level]=roofLevelArray
+    const levelObject= storeys[level]
+      for (let e in levelObject){
+        const set= levelObject[e]
+        const setArray = Array.from(set)
+        for (let num in setArray){
+          const classifiedId:number= setArray[num]as number
+          //console.log(classifiedId)
+          const propClassifiedId = properties[classifiedId]
+          const typeClassifiedId= propClassifiedId.type
+          if (typeClassifiedId===WEBIFC.IFCWALL||typeClassifiedId===WEBIFC.IFCWALLSTANDARDCASE||typeClassifiedId===WEBIFC.IFCWALLELEMENTEDCASE||typeClassifiedId===WEBIFC.IFCWALLELEMENTEDCASE){
+            //if(isValuePresent(wallIdList,classifiedId)){return}
+            wallLevelArray.push(classifiedId)
+            //console.log("pushedIdwalls",classifiedId)
+          } else if(typeClassifiedId===WEBIFC.IFCWINDOW){
+            //if(isValuePresent(windowIdList,classifiedId)){return}
+            windowLevelArray.push(classifiedId)
+            //console.log("pushedIdwindow",classifiedId)
+          } else if(typeClassifiedId===WEBIFC.IFCSLAB||typeClassifiedId===WEBIFC.IFCCOVERING){
+            //if(isValuePresent(floorIdList,classifiedId)){return}
+            floorLevelArray.push(classifiedId)
+            //console.log("pushedIdfloor",classifiedId)
+          } else if(typeClassifiedId===WEBIFC.IFCROOF){
+            //if(isValuePresent(roofIdList,classifiedId)){return}
+            roofLevelArray.push(classifiedId)
+            //console.log("pushedIdroof",classifiedId)
+          } else{console.log("notfound")}
+
+        }
+    }
+    if (wallLevelArray.length===0){
+      delete wallIdList[wallLevelArray]
+    } else if (windowIdList[level].length===0){
+      delete windowIdList[level]
+    } else if (floorLevelArray.length===0){
+      console.log("this is empty!")
+      delete floorIdList[floorLevelArray]
+    } else if (roofLevelArray.length===0){
+      delete roofIdList[level]
+    }
+  }
+}
+
 
 //get the IDs of different types
 function getEntityIds(obj: any):any []| undefined {
   for (let ifcType in obj.entities) {
     if(ifcType=='IFCWALL'||ifcType==="IFCWALLSTANDARDCASE"){
-      const ifcWall=( obj.entities[ifcType]);
+      const ifcWall=obj.entities[ifcType];
       for (let entitiesWall in ifcWall){
         let idSetWall=ifcWall[entitiesWall]
         for (let wallValue of idSetWall){
           const wallValueNum:number = parseInt(wallValue)
-          
           wallIdArray.push(wallValueNum)
         }
       }
@@ -105,7 +185,6 @@ function getEntityIds(obj: any):any []| undefined {
 //getting the elements of the model with the psets and properties
 async function getEntityProperties(model: FragmentsGroup, array: any[]) {
   const properties = await model.properties;
- 
   for (let id in array) {
     let modelEntityPset={}
     let modelEntity = {modelEntityPset}
@@ -150,15 +229,47 @@ async function getEntityProperties(model: FragmentsGroup, array: any[]) {
               }
           }  
         }
-      else {return}  
       }
     )
 
         wallArray.push(modelEntity)
       }
-      console.log(wallArray)
    }
-
+   //Prueba extractMaterial
+   async function extractMaterial (model: FragmentsGroup, id :number){
+    if(model.properties===undefined){return}
+    const exampleProperties  = await model.properties;
+    const idName= exampleProperties[id].ObjectType.value
+    console.log(idName)
+    OBC.IfcPropertiesUtils.getRelationMap(exampleProperties,WEBIFC.IFCRELDEFINESBYPROPERTIES,(idExample,relatedTypeId)=>{
+      const workingIDs= relatedTypeId.filter(i => i===id)
+      const setType= exampleProperties[idExample]
+      if(setType.type=== WEBIFC.IFCELEMENTQUANTITY && workingIDs.length!==0){
+      OBC.IfcPropertiesUtils.getQsetQuantities(exampleProperties,idExample,(qtoId)=>{
+        console.log(exampleProperties[qtoId])
+      } )
+    }
+      //}
+      
+    })
+    //OBC.IfcPropertiesUtils.getRelationMap(exampleProperties,WEBIFC.IFCRELASSOCIATESMATERIAL,(idExample,relatedIds)=>{
+    //  const workingIDs= relatedIds.filter(id => id===idExample)
+    //  const set = exampleProperties[idExample]
+    //  if(set.type===WEBIFC.IFCMATERIALLAYERSET|| set.type===WEBIFC.IFCMATERIALCONSTITUENTSET || set.type!== WEBIFC.IFCMATERIALCONSTITUENT && workingIDs.length!==0){
+    //    const setName = set.Name.value
+    //    if(setName){
+    //      if(setName===idName){
+    //        const materialArray = set.MaterialConstituents 
+    //        console.log(materialArray)
+    //        for (let m in materialArray){
+    //          const mId= materialArray[m].value
+    //          console.log(exampleProperties[mId])
+    //        }
+    //      }
+    //    }
+    //  }
+    //})
+  }
 //Adding a classifier
 
 const classifier = new OBC.FragmentClassifier(viewer)
@@ -183,19 +294,30 @@ async function loadIfcAsFragments(ifcModelFile) {
   const model = await ifcLoader.load(buffer, file.url);
   scene.add(model);
   const properties= model.properties 
+  //console.log(properties)
   highlighter.update()
   //Classify the entities
-  classifier.byEntity(model)
   classifier.byStorey(model)
+  classifier.byEntity(model)
+  
   const objProp = classifier.get()
   await objProp
-  console.log(objProp)
+  //console.log(objProp)
   //This functions returns the express Ids of the walls
   await getEntityIds(objProp)
+  await getEntityIdsByLevel(model,objProp)
   await wallIdArray,floorIdArray,windowIdArray
-  console.log(wallIdArray)
-  await getEntityProperties(model, wallIdArray)
+  //await getEntityProperties(model, wallIdArray)
+  if(properties===undefined){return}
+  //console.log("walls:",wallIdList)
+  //console.log("windows",windowIdList)
+  //console.log("floors",floorIdList)
+  //console.log("roofs:",roofIdList)
+  const wallExample =(wallIdArray[2])
+  console.log("wallProperties",properties[wallExample])
+  extractMaterial(model,wallExample)
 }
+
 
 function ifcLoadEvent(event){
   let buttonId = event.target.id
