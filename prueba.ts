@@ -53,44 +53,7 @@
 
      
 
-////get the IDs of different types
-//function getEntityIds(obj: any):any []| undefined {
-//  for (let ifcType in obj.entities) {
-//    if(ifcType=='IFCWALL'||ifcType==="IFCWALLSTANDARDCASE"){
-//      const ifcWall=obj.entities[ifcType];
-//      for (let entitiesWall in ifcWall){
-//        let idSetWall=ifcWall[entitiesWall]
-//        for (let wallValue of idSetWall){
-//          const wallValueNum:number = parseInt(wallValue)
-//          wallIdArray.push(wallValueNum)
-//        }
-//      }
-//    }
-//    if(ifcType=='IFCWINDOW'){
-//      const ifcWindow= (obj.entities[ifcType]);
-//      for (let entitiesWindow in ifcWindow){
-//        let idSetWindow= ifcWindow[entitiesWindow]
-//        for (let windowValue of idSetWindow){
-//          const windowValueNum:number = parseInt(windowValue)
-//          windowIdArray.push(windowValueNum)
-//        }
-//      }
-//    }
-//    if(ifcType=='IFCSLAB'){
-//      const ifcSlab= (obj.entities[ifcType]);
-//      for (let entitiesFloor in ifcSlab){
-//        let idSetSlab= ifcSlab[entitiesFloor]
-//        for (let slabValue of idSetSlab){
-//          const slabValueNum:number = parseInt(slabValue)
-//          floorIdArray.push(slabValueNum)
-//        }
-//      }
-//    }
-//  }
-//  //Elementos
-//  //console.log("Muros en el modelo", wallIdArray)
-//  return wallIdArray.length > 0 ? wallIdArray: undefined; // Return undefined if 'IFCWALL' entity type is not found
-//}
+
 
  /*/Prueba extractMaterial
    async function extractMaterial (model: FragmentsGroup, id :number){
