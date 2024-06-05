@@ -46,6 +46,7 @@ ifcLoader.settings.webIfc.COORDINATE_TO_ORIGIN = true;
 ifcLoader.settings.webIfc.OPTIMIZE_PROFILES = true;
 
 //Setting a model
+const modelEntitiesIdByLevel:any={}
 //modelEntitiesIDs!
 const wallIdArray: any= [];
 const windowIdArray:any=[];
@@ -102,8 +103,43 @@ function isValuePresent(obj: Record<string, any[]>, value: any): boolean {
     }
   return false;
 }
-//Sorting the IDs by type and level
+//Prueba única lista de id
 async function getEntityIdsByLevel(model: FragmentsGroup, obj:any){
+  const properties= model.properties
+  if (properties===undefined||null){return}
+  const storeys= obj.storeys
+  for (let level in storeys){
+    let modelEntityLevelArray:any=[]
+    modelEntitiesIdByLevel[level]=modelEntityLevelArray
+    const storeysObject= storeys[level]
+    for (let e in storeysObject){
+      const set = storeysObject[e]
+      const setArray= Array.from(set)
+      for (let id in setArray){
+        const classifiedId:number= setArray[id]as number
+        const classifiedIdProps = properties[classifiedId]
+        const classifiedIdType= classifiedIdProps.type
+        if(classifiedIdType === WEBIFC.IFCWALL||classifiedIdType === WEBIFC.IFCWALLSTANDARDCASE||classifiedIdType ===WEBIFC.IFCWALLELEMENTEDCASE ||classifiedIdType ===WEBIFC.IFCCURTAINWALL|| //Ifc Wall classes
+          classifiedIdType === WEBIFC.IFCWINDOW || classifiedIdType === WEBIFC.IFCPLATE||classifiedIdType ===WEBIFC.IFCRAILING || classifiedIdType ===WEBIFC.IFCMEMBER || classifiedIdType ===WEBIFC.IFCDOOR || //IfcWindow or Curtain pannel
+          classifiedIdType === WEBIFC.IFCSLAB || classifiedIdType === WEBIFC.IFCSLABSTANDARDCASE ||classifiedIdType ===WEBIFC.IFCSLABELEMENTEDCASE|| classifiedIdType ===WEBIFC.IFCCOVERING || // Ifc floors and related
+          classifiedIdType === WEBIFC.IFCROOF || classifiedIdType === WEBIFC.IFCBUILDINGELEMENTPROXY || classifiedIdType ===WEBIFC.IFCBUILDINGELEMENT || //Ifc
+          classifiedIdType === WEBIFC.IFCCOLUMN || classifiedIdType === WEBIFC.IFCCOLUMNSTANDARDCASE || classifiedIdType === WEBIFC.IFCBEAM || classifiedIdType === WEBIFC.IFCFOOTING || classifiedIdType === WEBIFC.IFCPILE ||
+          classifiedIdType === WEBIFC.IFCSTAIR || classifiedIdType === WEBIFC.IFCSTAIRFLIGHT || classifiedIdType === WEBIFC.IFCRAMP || classifiedIdType === WEBIFC.IFCRAMPFLIGHT)
+          {
+            if(isValuePresent(modelEntitiesIdByLevel,classifiedId)){continue}
+            else{modelEntityLevelArray.push(classifiedId)}
+          }
+        else {continue}
+      }
+    }
+    if (modelEntityLevelArray.length===0){
+      delete modelEntitiesIdByLevel[modelEntityLevelArray]
+  }
+}
+}
+
+//Sorting the IDs by type and level
+async function getEntityIdsByLevelByType(model: FragmentsGroup, obj:any){
   const properties= model.properties
   if(properties===undefined){return}
   const storeys= obj.storeys
@@ -126,7 +162,7 @@ async function getEntityIdsByLevel(model: FragmentsGroup, obj:any){
           //console.log(classifiedId)
           const propClassifiedId = properties[classifiedId]
           const typeClassifiedId= propClassifiedId.type
-          if (typeClassifiedId===WEBIFC.IFCWALL||typeClassifiedId===WEBIFC.IFCWALLSTANDARDCASE||typeClassifiedId===WEBIFC.IFCWALLELEMENTEDCASE||typeClassifiedId===WEBIFC.IFCWALLELEMENTEDCASE){
+          if (typeClassifiedId===WEBIFC.IFCWALL||typeClassifiedId===WEBIFC.IFCWALLSTANDARDCASE||typeClassifiedId===WEBIFC.IFCWALLELEMENTEDCASE){
             if(isValuePresent(wallIdByLevel,classifiedId)){continue}
             else wallLevelArray.push(classifiedId)
             //console.log("pushedIdwalls",classifiedId)
@@ -167,10 +203,12 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
     let windowEntitiesLevelArray: ModelEntity[] = [];
     let floorEntitiesLevelArray: ModelEntity[] = [];
     let roofEntitiesLevelArray: ModelEntity[] = [];
+
     wallEntitiesByLevel[level]=wallEntitiesLevelArray
     windowEntitiesByLevel[level]=windowEntitiesLevelArray
     floorEntitiesByLevel[level]=floorEntitiesLevelArray
     roofEntitiesByLevel[level]=roofEntitiesLevelArray
+
     for (let id in levelArray){
       let modelEntityPset={}
       let modelEntity: ModelEntity = { key: levelArray[id], Attributes: { GlobalId: "", Name: "", Tag: "" }, modelEntityPset };
@@ -205,11 +243,12 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
               for (let p in set.HasProperties){
                 if(set.HasProperties.length>0){
                   const pId= set.HasProperties[p].value
-                  if(properties[pId].Name.value && properties[pId].NominalValue.value){
+                  if(properties[pId].Name.value != null && properties[pId].NominalValue.value !== null){
                     const pName= properties[pId].Name.value
                     const pValue= properties[pId].NominalValue.value
                     modelEntityPsetValue[pName]=pValue
                   }
+                  else {continue}
                 }
               }
             }  
@@ -252,13 +291,16 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
           }
         }
       )
-    let idType= idProperties.type
-    windowEntitiesLevelArray.push(modelEntity)
-    //Condicional para pushearlo en diferentes arrays
-    //if(idType===WEBIFC.IFCWALL||idType===WEBIFC.IFCWALLSTANDARDCASE||idType===WEBIFC.IFCWALLELEMENTEDCASE||idType===WEBIFC.IFCWALLELEMENTEDCASE){wallEntitiesLevelArray.push(modelEntity)}
-    //else if (idType===WEBIFC.IFCWINDOW){windowEntitiesLevelArray.push(modelEntity)}
-    //else if (idType===WEBIFC.IFCSLAB){floorEntitiesLevelArray.push(modelEntity)}
-    //else if (idType===WEBIFC.IFCROOF){roofEntitiesLevelArray.push(modelEntity)} 
+      let idType= idProperties.type
+      if(idType===WEBIFC.IFCWALL || idType=== WEBIFC.IFCWALLSTANDARDCASE || idType === WEBIFC.IFCWALLELEMENTEDCASE){wallEntitiesLevelArray.push(modelEntity)}
+      else if(idType === WEBIFC.IFCWINDOW){windowEntitiesLevelArray.push(modelEntity)}
+      else if(idType === WEBIFC.IFCSLAB || idType === WEBIFC.IFCCOVERING){floorEntitiesLevelArray.push(modelEntity)}
+      else if(idType === WEBIFC.IFCROOF){roofEntitiesLevelArray.push(modelEntity)}
+
+     // if(wallEntitiesLevelArray.length === 0){delete wallEntitiesByLevel[level]}
+     // if(windowEntitiesLevelArray.length === 0){delete windowEntitiesByLevel[level]}
+     // if(floorEntitiesLevelArray.length === 0){delete floorEntitiesByLevel[level]}
+     // if(roofEntitiesLevelArray.length === 0){delete roofEntitiesByLevel[level]}
     }
   }
 }
@@ -318,6 +360,9 @@ window.ondblclick = () => {
   }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Load fragments
+function disposeFragments(){
+  fragments.dispose
+}
 async function loadIfcAsFragments(ifcModelFile) {
   const file = await fetch(ifcModelFile);
   const data = await file.arrayBuffer();
@@ -328,24 +373,24 @@ async function loadIfcAsFragments(ifcModelFile) {
   highlighter.update()
   //Classify the entities
   classifier.byStorey(model)
-  classifier.byEntity(model)
   const objProp = classifier.get()
-  //console.log(objProp)
   //This functions returns the express Ids of the walls
   await getEntityIds(objProp)
   getEntityIdsByLevel(model, objProp)
+  //getEntityIdsByLevelByType(model,objProp)
   //
   await wallIdArray,floorIdArray,windowIdArray
-  console.log("muros",wallIdByLevel)
-  console.log("ventanas",windowIdByLevel)
-  console.log("suelos",floorIdByLevel)
-  console.log("cubierta",roofIdByLevel)
   await getEntityPropsByLevels(model,windowIdByLevel)
-  console.log("This is the object",windowEntitiesByLevel)
+  await getEntityPropsByLevels(model,modelEntitiesIdByLevel)
+  console.log("walls",wallEntitiesByLevel)
+  console.log("floors",floorEntitiesByLevel)
+  console.log("windows", windowEntitiesByLevel)
+  console.log("roofs", roofEntitiesByLevel)
   
   if(properties===undefined){return}
 }
 function ifcLoadEvent(event){
+  disposeFragments()
   let buttonId = event.target.id
   let phase= projectPhasesArray.find(phase=> phase.id===parseInt(buttonId))
   if(phase){
@@ -364,5 +409,4 @@ function printId(event){
 phasesBtns.forEach(button=>{
   button.addEventListener("click",ifcLoadEvent)
 });
-
 
