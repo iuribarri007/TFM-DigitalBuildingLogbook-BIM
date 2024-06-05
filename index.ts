@@ -62,10 +62,23 @@ const windowArray:any=[];
 const floorArray:any=[];
 const roofArray:any=[];
 //model entitiesObjectbyLevel
-const wallEntitiesByLevel={}
-const windowEntitiesByLevel={}
-const floorEntitiesByLevel={}
-const roofEntitiesByLevel={}
+interface ModelEntity {
+  key: number; // or string if expressID is string
+  Attributes: {
+      GlobalId: string;
+      Name: string;
+      Tag: string;
+      // PredefinedType?: string; // Uncomment if needed
+  };
+  [key: string]: any; // To accommodate dynamically added properties
+}
+interface ModelEntityPset {
+  [key: string]: any; // Adjust this type based on the actual structure of the properties
+}
+const wallEntitiesByLevel: { [key: string]: ModelEntity[] } = {};
+const windowEntitiesByLevel: { [key: string]: ModelEntity[] } = {};
+const floorEntitiesByLevel: { [key: string]: ModelEntity[] } = {};
+const roofEntitiesByLevel: { [key: string]: ModelEntity[] } = {};
 //modelEntitiesByLevel
 const wallArrayLevels:any=[];
 const windowArrayLevels:any=[];
@@ -146,29 +159,27 @@ async function getEntityIdsByLevel(model: FragmentsGroup, obj:any){
 }
 // Entity props by Level
 async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
-  const props = model.properties
+  const properties = model.properties
   for (let level in obj){
-    //
-    let levelIdArray= obj[level]
+    let levelArray= obj[level]
     //Define all arrays inside objects
-    let wallLevelPropsArray=[]
-    let windowLevelPropsArray=[]
-    let floorLevelPropsArray=[]
-    let roofLevelPropsArray=[]
-    wallEntitiesByLevel[level]=wallLevelPropsArray
-    windowEntitiesByLevel[level]=windowLevelPropsArray
-    floorEntitiesByLevel[level]=floorLevelPropsArray
-    roofEntitiesByLevel[level]=roofLevelPropsArray
-    //
-    for (let id in levelIdArray){
+    let wallEntitiesLevelArray: ModelEntity[] = [];
+    let windowEntitiesLevelArray: ModelEntity[] = [];
+    let floorEntitiesLevelArray: ModelEntity[] = [];
+    let roofEntitiesLevelArray: ModelEntity[] = [];
+    wallEntitiesByLevel[level]=wallEntitiesLevelArray
+    windowEntitiesByLevel[level]=windowEntitiesLevelArray
+    floorEntitiesByLevel[level]=floorEntitiesLevelArray
+    roofEntitiesByLevel[level]=roofEntitiesLevelArray
+    for (let id in levelArray){
       let modelEntityPset={}
-      let modelEntity={modelEntityPset}
-      const expressID= levelIdArray[id]
-      if(props === undefined|| null){return} 
+      let modelEntity: ModelEntity = { key: levelArray[id], Attributes: { GlobalId: "", Name: "", Tag: "" }, modelEntityPset };
+      const expressID= levelArray[id]
+      if(properties === undefined|| null){return} 
        //Insert the expressID as a key
       modelEntity["key"]= expressID
       //Define the atributes
-      const idProperties= props[expressID];
+      const idProperties= properties[expressID];
       const attributes= "Attributes"
       modelEntity[attributes]={
         "GlobalId": idProperties.GlobalId.value,
@@ -176,42 +187,80 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
         //"PredefinedType":idProperties.PredefinedType.value,
         "Tag": idProperties.Tag.value,
       }
-      //console.log(modelEntity)
-      let idProps= props[expressID]
-      let idType= idProps.type
-      //Condicional para pushearlo en diferentes arrays
       OBC.IfcPropertiesUtils.getRelationMap(
-        props,
+        properties,
         WEBIFC.IFCRELDEFINESBYPROPERTIES,
         (setID, relatedIDs)=>{
-          const set = props[setID]
-          const workingIDs= relatedIDs.filter(id => id===expressID)
+          const set = properties[setID]
+          const workingIDs= relatedIDs.filter(id => id==expressID)
           if( set.type===WEBIFC.IFCPROPERTYSET && workingIDs.length!==0){
-            console.log("This is a set",set)
             if(set.HasProperties.length!==0){
               let modelEntityPsetValue ={}
-              let modelEntityPsetKey= props[set.expressID].Name.value
+              let modelEntityPsetKey= properties[set.expressID].Name.value
               modelEntity[modelEntityPsetKey] = {
                 "id": set.expressID,
-                "name":props[set.expressID].Name.value,
-                }
-                for (let p in set.HasProperties){
-                  if(set.HasProperties.length>0){
-                    const pId= set.HasProperties[p].value
-                    const pName= props[pId].Name.value
-                    const pValue= props[pId].NominalValue.value
+                "name":modelEntityPsetKey,
+                modelEntityPsetValue
+              }
+              for (let p in set.HasProperties){
+                if(set.HasProperties.length>0){
+                  const pId= set.HasProperties[p].value
+                  if(properties[pId].Name.value && properties[pId].NominalValue.value){
+                    const pName= properties[pId].Name.value
+                    const pValue= properties[pId].NominalValue.value
                     modelEntityPsetValue[pName]=pValue
                   }
                 }
-          
+              }
             }  
+          }
+          else if(set.type===WEBIFC.IFCELEMENTQUANTITY && workingIDs.length!==0){
+            if (set.Quantities.length!==0){
+              let modelEntityQsetValue={}
+              let modelEntityQsetKey= properties[set.expressID].Name.value
+              modelEntity[modelEntityQsetKey]={
+                "id":set.expressID,
+                "name":modelEntityQsetKey,
+                modelEntityQsetValue
+              }
+              //console.log(modelEntityQsetKey,set)
+              for (let q in set.Quantities){
+                if(set.Quantities.length>0){
+                  const qId= set.Quantities[q].value
+                  const qIdProps= properties[qId]
+                  if (qIdProps.Name.value){
+                    if(properties[qId].type=== WEBIFC.IFCQUANTITYLENGTH){
+                      const qLengthName= qIdProps.Name.value
+                      const qLengthValue= qIdProps.LengthValue.value
+                      modelEntityQsetValue[qLengthName]=qLengthValue
+
+                    }
+                    else if (properties[qId].type=== WEBIFC.IFCQUANTITYAREA){
+                      const qAreaName= qIdProps.Name.value
+                      const qAreaValue= qIdProps.AreaValue.value
+                      modelEntityQsetValue[qAreaName]=qAreaValue
+                    }
+                    else if(properties[qId].type=== WEBIFC.IFCQUANTITYVOLUME){
+                      const qVolumeName= qIdProps.Name.value
+                      const qVolumeValue= qIdProps.VolumeValue.value
+                      modelEntityQsetValue[qVolumeName]= qVolumeValue
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       )
-      
+    let idType= idProperties.type
+    windowEntitiesLevelArray.push(modelEntity)
+    //Condicional para pushearlo en diferentes arrays
+    //if(idType===WEBIFC.IFCWALL||idType===WEBIFC.IFCWALLSTANDARDCASE||idType===WEBIFC.IFCWALLELEMENTEDCASE||idType===WEBIFC.IFCWALLELEMENTEDCASE){wallEntitiesLevelArray.push(modelEntity)}
+    //else if (idType===WEBIFC.IFCWINDOW){windowEntitiesLevelArray.push(modelEntity)}
+    //else if (idType===WEBIFC.IFCSLAB){floorEntitiesLevelArray.push(modelEntity)}
+    //else if (idType===WEBIFC.IFCROOF){roofEntitiesLevelArray.push(modelEntity)} 
     }
   }
-  console.log("This is the object",wallEntitiesByLevel)
 }
 ///////////////
 function getEntityIds(obj: any):any []| undefined {
@@ -252,86 +301,6 @@ function getEntityIds(obj: any):any []| undefined {
   //console.log("Muros en el modelo", wallIdArray)
   return wallIdArray.length > 0 ? wallIdArray: undefined; // Return undefined if 'IFCWALL' entity type is not found
 }
-
-//getting the elements of the model with the psets and properties
-
-async function getEntityProperties(model: FragmentsGroup, array: number[]) {
-  const properties = await model.properties;
-  
-  for (let id in array) {
-    
-    let modelEntityPset={}
-    let modelEntity = {modelEntityPset}
-    //Defining the expressID of the element being proccesses
-    const expressID = array[id]
-    if(properties === undefined|| null){return}
-    //Insert the expressID as a key
-    modelEntity["key"]= expressID
-    //Define the atributes
-    const idProperties= properties[expressID];
-    const attributes= "Attributes"
-    modelEntity[attributes]={
-      "GlobalId": idProperties.GlobalId.value,
-      "Name":idProperties.Name.value,
-      //"PredefinedType":idProperties.PredefinedType.value,
-      "Tag": idProperties.Tag.value,
-    }
-    //getting the relation map with "IfcRelDefinesByProperties", the Pset
-    
-    OBC.IfcPropertiesUtils.getRelationMap(
-      properties,
-      WEBIFC.IFCRELDEFINESBYPROPERTIES,
-      (setID, relatedIDs)=>{
-        const set = properties[setID]
-        const workingIDs= relatedIDs.filter(id => id===expressID)
-        
-        if( set.type===WEBIFC.IFCPROPERTYSET && workingIDs.length!==0){
-          //console.log(expressID,setID,set)
-          if(set.HasProperties.length!==0){
-            //console.log(set)
-            let modelEntityPsetValue ={}
-            let modelEntityPsetKey= properties[set.expressID].Name.value
-            modelEntity[modelEntityPsetKey] = {
-              "id": set.expressID,
-              "name":properties[set.expressID].Name.value,
-              modelEntityPsetValue
-              }
-              for (let p in set.HasProperties){
-                if(set.HasProperties.length>0){
-                  const pId= set.HasProperties[p].value
-                  const pName= properties[pId].Name.value
-                  const pValue= properties[pId].NominalValue.value
-                  modelEntityPsetValue[pName]=pValue
-                
-                }
-              }
-          }  
-          //OBC.IfcPropertiesUtils.getPsetProps(
-          //  properties,
-          //  setID,
-          //  (propID) =>{
-          //    let entityProps= properties[propID]; 
-          //    const entityPropName= entityProps.Name.value;
-          //    const entityPropValue= entityProps.NominalValue.value;
-          //    //modelEntityPset.modelEntityPsetValue[entityPropName]=entityPropValue
-          //      //const pName= properties[propID].Name.value
-          //      //const pValue= properties[propID].NominalValue.value
-          //      //modelEntityPsetValue[pName]=pValue
-          //    //modelEntityPsetValue[entityPropName]
-          //    //console.log(expressID,setID,propID,entityPropName,entityPropValue)//ESTE ESTÁ BIEN          
-          //)
-          
-        }
-      else {return}  
-      }
-    )
-
-        wallArray.push(modelEntity)
-      }
-      console.log(wallArray)
-   }
-
-
 ///////////////////
 const classifier = new OBC.FragmentClassifier(viewer)
 //Clipper
@@ -356,7 +325,6 @@ async function loadIfcAsFragments(ifcModelFile) {
   const model = await ifcLoader.load(buffer, file.url);
   scene.add(model);
   const properties= model.properties 
-  //console.log(properties)
   highlighter.update()
   //Classify the entities
   classifier.byStorey(model)
@@ -364,17 +332,18 @@ async function loadIfcAsFragments(ifcModelFile) {
   const objProp = classifier.get()
   //console.log(objProp)
   //This functions returns the express Ids of the walls
-  await getEntityIdsByLevel(model,objProp)
+  await getEntityIds(objProp)
+  getEntityIdsByLevel(model, objProp)
+  //
   await wallIdArray,floorIdArray,windowIdArray
-  //await getEntityPropsByLevels(model,wallIdList)
-  await getEntityPropsByLevels(model,wallIdByLevel)
-  /// prueba
+  console.log("muros",wallIdByLevel)
+  console.log("ventanas",windowIdByLevel)
+  console.log("suelos",floorIdByLevel)
+  console.log("cubierta",roofIdByLevel)
+  await getEntityPropsByLevels(model,windowIdByLevel)
+  console.log("This is the object",windowEntitiesByLevel)
+  
   if(properties===undefined){return}
-  //console.log("walls:",wallIdByLevel)
-  //console.log("windows",windowIdByLevel)
-  //console.log("floors",floorIdByLevel)
-  //console.log("roofs:",roofIdByLevel)
-  //extractMaterial(model,wallExample)
 }
 function ifcLoadEvent(event){
   let buttonId = event.target.id
