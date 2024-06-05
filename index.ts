@@ -53,10 +53,7 @@ const windowIdArray:any=[];
 const floorIdArray:any=[];
 const roofIdArray:any =[]
 //modelEntitiesIds but with objects
-const wallIdByLevel:any={}
-const windowIdByLevel:any={}
-const floorIdByLevel:any={}
-const roofIdByLevel:any={}
+
 //modelEntities
 const wallArray:any=[];
 const windowArray:any=[];
@@ -138,61 +135,6 @@ async function getEntityIdsByLevel(model: FragmentsGroup, obj:any){
 }
 }
 
-//Sorting the IDs by type and level
-async function getEntityIdsByLevelByType(model: FragmentsGroup, obj:any){
-  const properties= model.properties
-  if(properties===undefined){return}
-  const storeys= obj.storeys
-  for (let level in storeys){
-    //console.log(level)
-    let wallLevelArray:any =[]
-    let windowLevelArray:any= []
-    let floorLevelArray:any= []
-    let roofLevelArray:any= []
-    wallIdByLevel[level]=wallLevelArray
-    windowIdByLevel[level]=windowLevelArray
-    floorIdByLevel[level]=floorLevelArray
-    roofIdByLevel[level]=roofLevelArray
-    const levelObject= storeys[level]
-      for (let e in levelObject){
-        const set= levelObject[e]
-        const setArray = Array.from(set)
-        for (let num in setArray){
-          const classifiedId:number= setArray[num]as number
-          //console.log(classifiedId)
-          const propClassifiedId = properties[classifiedId]
-          const typeClassifiedId= propClassifiedId.type
-          if (typeClassifiedId===WEBIFC.IFCWALL||typeClassifiedId===WEBIFC.IFCWALLSTANDARDCASE||typeClassifiedId===WEBIFC.IFCWALLELEMENTEDCASE){
-            if(isValuePresent(wallIdByLevel,classifiedId)){continue}
-            else wallLevelArray.push(classifiedId)
-            //console.log("pushedIdwalls",classifiedId)
-          } else if(typeClassifiedId===WEBIFC.IFCWINDOW){
-            if(isValuePresent(windowIdByLevel,classifiedId)){continue}
-            else windowLevelArray.push(classifiedId)
-            //console.log("pushedIdwindow",classifiedId)
-          } else if(typeClassifiedId===WEBIFC.IFCSLAB||typeClassifiedId===WEBIFC.IFCCOVERING){
-            //if(isValuePresent(floorIdList,classifiedId)){return}
-            floorLevelArray.push(classifiedId)
-            //console.log("pushedIdfloor",classifiedId)
-          } else if(typeClassifiedId===WEBIFC.IFCROOF){
-            //if(isValuePresent(roofIdList,classifiedId)){return}
-            roofLevelArray.push(classifiedId)
-            //console.log("pushedIdroof",classifiedId)
-          } else{console.log("notfound")}
-        }
-    }
-    if (wallLevelArray.length===0){
-      delete wallIdByLevel[wallLevelArray]
-    } else if (windowIdByLevel[level].length===0){
-      delete windowIdByLevel[level]
-    } else if (floorLevelArray.length===0){
-      console.log("this is empty!")
-      delete floorIdByLevel[floorLevelArray]
-    } else if (roofLevelArray.length===0){
-      delete roofIdByLevel[level]
-    }
-  }
-}
 // Entity props by Level
 async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
   const properties = model.properties
@@ -299,51 +241,27 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
 
      // if(wallEntitiesLevelArray.length === 0){delete wallEntitiesByLevel[level]}
      // if(windowEntitiesLevelArray.length === 0){delete windowEntitiesByLevel[level]}
-     // if(floorEntitiesLevelArray.length === 0){delete floorEntitiesByLevel[level]}
-     // if(roofEntitiesLevelArray.length === 0){delete roofEntitiesByLevel[level]}
+      if(floorEntitiesLevelArray.length === 0){delete floorEntitiesByLevel[level]}
+      if(roofEntitiesLevelArray.length === 0){delete roofEntitiesByLevel[level]}
     }
   }
+}
+//TAMOS AQUI
+function getExternalEntitiesByLevel (...objs: any){
+  objs.forEach(obj=>{
+    for (let level in obj){
+      let levelArray= obj[level]
+      for (let entity in levelArray){
+        
+      }
+
+    }
+
+  }
+
+  )
 }
 ///////////////
-function getEntityIds(obj: any):any []| undefined {
-  for (let ifcType in obj.entities) {
-    if(ifcType=='IFCWALL'||ifcType==="IFCWALLSTANDARDCASE"){
-      const ifcWall=( obj.entities[ifcType]);
-      for (let entitiesWall in ifcWall){
-        let idSetWall=ifcWall[entitiesWall]
-        for (let wallValue of idSetWall){
-          const wallValueNum:number = parseInt(wallValue)
-          
-          wallIdArray.push(wallValueNum)
-        }
-      }
-    }
-    if(ifcType=='IFCWINDOW'){
-      const ifcWindow= (obj.entities[ifcType]);
-      for (let entitiesWindow in ifcWindow){
-        let idSetWindow= ifcWindow[entitiesWindow]
-        for (let windowValue of idSetWindow){
-          const windowValueNum:number = parseInt(windowValue)
-          windowIdArray.push(windowValueNum)
-        }
-      }
-    }
-    if(ifcType=='IFCSLAB'){
-      const ifcSlab= (obj.entities[ifcType]);
-      for (let entitiesFloor in ifcSlab){
-        let idSetSlab= ifcSlab[entitiesFloor]
-        for (let slabValue of idSetSlab){
-          const slabValueNum:number = parseInt(slabValue)
-          floorIdArray.push(slabValueNum)
-        }
-      }
-    }
-  }
-  //Elementos
-  //console.log("Muros en el modelo", wallIdArray)
-  return wallIdArray.length > 0 ? wallIdArray: undefined; // Return undefined if 'IFCWALL' entity type is not found
-}
-///////////////////
 const classifier = new OBC.FragmentClassifier(viewer)
 //Clipper
 const clipper = new OBC.EdgesClipper(viewer);
@@ -357,7 +275,8 @@ const stylerButton = styler.uiElement.get("mainButton");
 //Logic to clipper
 window.ondblclick = () => {
   clipper.create();
-  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Load fragments
 function disposeFragments(){
@@ -370,17 +289,16 @@ async function loadIfcAsFragments(ifcModelFile) {
   const model = await ifcLoader.load(buffer, file.url);
   scene.add(model);
   const properties= model.properties 
+  console.log(properties)
   highlighter.update()
   //Classify the entities
   classifier.byStorey(model)
   const objProp = classifier.get()
   //This functions returns the express Ids of the walls
-  await getEntityIds(objProp)
-  getEntityIdsByLevel(model, objProp)
+  await getEntityIdsByLevel(model, objProp)
   //getEntityIdsByLevelByType(model,objProp)
   //
   await wallIdArray,floorIdArray,windowIdArray
-  await getEntityPropsByLevels(model,windowIdByLevel)
   await getEntityPropsByLevels(model,modelEntitiesIdByLevel)
   console.log("walls",wallEntitiesByLevel)
   console.log("floors",floorEntitiesByLevel)

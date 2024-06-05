@@ -19,7 +19,7 @@ let phase1:ObjectPhaseInfo ={
     id:1,
     year:2023,
     description: "asdnasd",
-    ifcModel: "ifc/ARM-MAAB-ARM01-ZZZ-M3D-ARQ-ZZZ-TFM.ifc"
+    ifcModel: "ifc/ARM-MAAB-ARM01-ZZZ-M3D-ARQ-ZZZ-TFM01.ifc"
 }
 let phase2:ObjectPhaseInfo ={
     id:2,
