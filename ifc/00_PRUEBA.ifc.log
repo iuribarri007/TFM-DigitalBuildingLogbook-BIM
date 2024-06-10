@@ -2,17 +2,17 @@
 
 /******************************************************************************************
 * WriteStepFile diagnostics.
-* Date:                           Wed May 08 12:25:45 2024 
+* Date:                           Thu Jun 06 11:32:47 2024 
 * Produced by:                    The EXPRESS Data Manager Version 5.02.0100.07 : 28 Aug 2013
 * Module:                         EDMstepFileFactory/EDMstandAlone
 * Host:                           MSI
-* Database:                       C:\Users\IIGO~1\AppData\Local\Temp\6330cc2f-5840-4513-bb10-364b6133bd19\e5b9073f-6aa9-4c4e-a9b2-be4c79225f2b\ifc
+* Database:                       C:\Users\IIGO~1\AppData\Local\Temp\1eae15bb-f75f-4bb5-adb1-5dde999c9faa\aedcf119-33ac-40db-92fe-6508ba8e10ea\ifc
 * Database version:               5507
-* Database creation date:         Wed May 08 12:25:44 2024
+* Database creation date:         Thu Jun 06 11:32:45 2024
 * Model:                          DataRepository.ifc
-* Model creation date:            Wed May 08 12:25:45 2024
+* Model creation date:            Thu Jun 06 11:32:46 2024
 * Header model:                   DataRepository.ifc_HeaderModel
-* Header model creation date:     Wed May 08 12:25:45 2024
+* Header model creation date:     Thu Jun 06 11:32:46 2024
 * Step file:                      00_PRUEBA.ifc
 * EDMuser:                        sdai-user
 * EDMgroup:                       sdai-group
