@@ -3,8 +3,7 @@ import * as WEBIFC from "web-ifc"
 import { FragmentsGroup } from "bim-fragment"
 //Define an object to contain de Ids By level
 const modelEntitiesIdByLevel:any={}
-//Define a function to decide weather a value is alredy present
-// Defining a function to check if a value is present
+// Defining a function to check if a value is already present
 function isValuePresent(obj: Record<string, any[]>, value: any): boolean {
     for (const key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {

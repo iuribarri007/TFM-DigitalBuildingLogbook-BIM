@@ -431,6 +431,7 @@ async function loadIfcAsFragments(ifcModelFile) {
   //Classify the entities manually
   classifier.byStorey(model)
   const objProp = classifier.get()
+  console.log(objProp)
   classifier.byStorey(model)
   classifier.byEntity(model)
 
