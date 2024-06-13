@@ -29,7 +29,6 @@ const highlighter = new OBC.FragmentHighlighter(viewer)
 //Changing the colour to the highlighter
 
 highlighter.setup()
-
 viewer.init()
 cameraComponent.updateAspect()
 rendererComponent.postproduction.enabled= true
@@ -60,6 +59,7 @@ const wallArray:any=[];
 const windowArray:any=[];
 const floorArray:any=[];
 const roofArray:any=[];
+
 //model entitiesObjectbyLevel
 interface ModelEntity {
   key: number; // or string if expressID is string
@@ -171,8 +171,6 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
     let windowEntitiesLevelArray: ModelEntity[] = [];
     let floorEntitiesLevelArray: ModelEntity[] = [];
     let roofEntitiesLevelArray: ModelEntity[] = [];
-
-    
     //
     for (let id in levelArray){
       let modelEntityPset={}
@@ -191,24 +189,6 @@ async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
         //"PredefinedType":idProperties.PredefinedType.value,
         "Tag": idProperties.Tag.value,
       }
-      //OBC.IfcPropertiesUtils.getRelationMap(
-      //  properties,
-      //  WEBIFC.IFCRELASSOCIATESMATERIAL,(
-      //    (setID,relatedIDs)=>{
-      //      const set = properties[setID]
-      //      const workingIDs= relatedIDs.filter(id => id==expressID)
-      //      
-      //      if(workingIDs.length!==0){
-      //        console.log(expressID,workingIDs,relatedIDs,set)
-      //        
-      //        
-      //        
-      //      
-      //      }
-      //    }
-      //  )
-      //)
-
       OBC.IfcPropertiesUtils.getRelationMap(
         properties,
         WEBIFC.IFCRELDEFINESBYPROPERTIES,
