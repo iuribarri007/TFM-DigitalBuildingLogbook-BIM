@@ -7,6 +7,9 @@ import { exp, or } from "three/examples/jsm/nodes/Nodes.js"
 //
 import { projectPhasesArray} from './infoProject'
 import { ViewHelper } from "three/examples/jsm/helpers/ViewHelper.js"
+import { classifyEnvelope, getDblEntitiesByLevel } from "./src/getProps"
+
+import {dblEnvelopeWallElements, dblEnvelopeWindowElements, dblEnvelopeFloorElements, dblEnvelopeRoofElements} from "./src/getProps"
 
 const viewer = new OBC.Components()
 const sceneComponent = new OBC.SimpleScene(viewer)
@@ -162,7 +165,7 @@ async function getEntityIdsByLevel(model: FragmentsGroup, obj:any){
 }
 }
 // Entity props by Level
-async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
+/*/async function getEntityPropsByLevels(model:FragmentsGroup, obj:object){
   const properties = model.properties
   for (let level in obj){
     let levelArray= obj[level]
@@ -343,7 +346,7 @@ function getExternalEntitiesByLevel (...objs: any){
   }
   )
 }
-
+/*/
 ///////////////
 
 
@@ -427,7 +430,6 @@ async function loadIfcAsFragments(ifcModelFile) {
 
   })
   
-  
   //Classify the entities manually
   classifier.byStorey(model)
   const objProp = classifier.get()
@@ -445,16 +447,9 @@ async function loadIfcAsFragments(ifcModelFile) {
   await getEntityIdsByLevel(model, objProp)
   //getEntityIdsByLevelByType(model,objProp)
   //
-  await wallIdArray,floorIdArray,windowIdArray
-  await getEntityPropsByLevels(model,modelEntitiesIdByLevel)
-  console.log("ALLwalls",wallEntitiesByLevel)
-  console.log("Allfloors",floorEntitiesByLevel)
-  console.log("Allwindows", windowEntitiesByLevel)
-  console.log("Allroofs", roofEntitiesByLevel)
+  await getDblEntitiesByLevel(model,objProp)
+  await classifyEnvelope(dblEnvelopeWallElements, dblEnvelopeFloorElements,dblEnvelopeRoofElements)
   //
- 
-
-  await getExternalEntitiesByLevel(wallEntitiesByLevel,windowEntitiesByLevel)
  
   console.log("ExternalWalls",externalWallsByLevel)
   console.log("ExternalWindows",externalWindowsByLevel)

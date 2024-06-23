@@ -8,18 +8,16 @@ import { ViewHelper } from "three/examples/jsm/helpers/ViewHelper.js"
 //Local imports
 import { projectPhasesArray} from "../infoProject"
 //Local logic
-import { getEntityIdsByLevel } from "./getProps"
-import { getEntityPropsByLevels } from "./getProps"
-import { wallEntitiesByLevel } from "./getProps"
-import { modelEntitiesIdByLevel } from "./getProps"
+
+import { wallEntitiesByLevel, modelEntitiesIdByLevel, dblEnvelopeWallElements, dblEnvelopeWindowElements, dblEnvelopeFloorElements, dblEnvelopeRoofElements } from "./getProps"
 import { floorEntitiesByLevel } from "./getProps"
 import { windowEntitiesByLevel } from "./getProps"
 import { roofEntitiesByLevel } from "./getProps"
-import { getExternalEntitiesByLevel } from "./getProps"
-import { externalWallsByLevel } from "./getProps"
-import { externalWindowsByLevel } from "./getProps"
-import { externalFloorsByLevel } from "./getProps"
-import { externalRoofsByLevel } from "./getProps"
+import {modelFragmentIdByLevel} from "./getProps"
+//Trial logic
+import { getEntityFragmentsByLevel } from "./getProps"
+import { getDblEntitiesByLevel } from "./getProps"
+import { classifyEnvelope } from "./getProps"
 //
 const viewer = new OBC.Components()
 const sceneComponent = new OBC.SimpleScene(viewer)
@@ -136,41 +134,34 @@ async function loadIfcAsFragments(ifcModelFile) {
   highlighter.events.select.onHighlight.add((fragmentMap)=>{
     const expressID= [...Object.values(fragmentMap)[0]][0]
     propertiesProcessor.renderProperties(model,Number(expressID))
-
   })
   
   
   //Classify the entities manually
   classifier.byStorey(model)
   const objProp = classifier.get()
-  console.log(objProp)
   classifier.byStorey(model)
   classifier.byEntity(model)
+
+  //Trying to get the fragments and Id
+  await getEntityFragmentsByLevel(model,objProp)
+  //
+  await getDblEntitiesByLevel(model,modelFragmentIdByLevel)
+  //
+  await classifyEnvelope(dblEnvelopeWallElements,dblEnvelopeFloorElements,dblEnvelopeRoofElements)
+
+  console.log(dblEnvelopeWallElements,dblEnvelopeWindowElements)
 
   //Adding Classification Tree
   const tree = await createModelTree()
   await classificationWindow.slots.content.dispose(true)
   classificationWindow.addChild(tree)
   
-
   //This functions returns the express Ids of the walls
-  await getEntityIdsByLevel(model, objProp)
+
   //getEntityIdsByLevelByType(model,objProp)
   //
-  await getEntityPropsByLevels(model,modelEntitiesIdByLevel)
-  console.log("ALLwalls",wallEntitiesByLevel)
-  console.log("Allfloors",floorEntitiesByLevel)
-  console.log("Allwindows", windowEntitiesByLevel)
-  console.log("Allroofs", roofEntitiesByLevel)
-  //
- 
-
-  await getExternalEntitiesByLevel(wallEntitiesByLevel,windowEntitiesByLevel)
- 
-  console.log("ExternalWalls",externalWallsByLevel)
-  console.log("ExternalWindows",externalWindowsByLevel)
-  //console.log("externalFloors",externalFloorsByLevel)
-  //console.log("ExternalRoofs",externalFloorsByLevel)
+  
   
 }
 function ifcLoadEvent(event){

@@ -44,28 +44,5 @@ interface Subcategory {
   }
 
 generateTable(a2)
-/*/ Add logic to Nav Btn//
-document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".category-btn");
-  buttons.forEach((button) => {
-      button.addEventListener("click", () => {
-        
-        const arrayId = button.id;
 
-          // Call generateTable with the corresponding array based on the button's ID
-          switch (arrayId) {
-              case "a2":
-                  generateTable(a2);
-                  break;
-              case "a3":
-                  generateTable(a3);
-                  break;
-              default:
-                  console.error("Array not found for button ID:", arrayId);
-                  break;
-          }
-      });
-  });
-});
-/*/
 
