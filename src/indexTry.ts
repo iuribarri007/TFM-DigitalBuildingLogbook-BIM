@@ -148,9 +148,9 @@ async function loadIfcAsFragments(ifcModelFile) {
   //
   await getDblEntitiesByLevel(model,modelFragmentIdByLevel)
   //
-  await classifyEnvelope(dblEnvelopeWallElements,dblEnvelopeFloorElements,dblEnvelopeRoofElements)
+  await classifyEnvelope(dblEnvelopeWallElements)
 
-  console.log(dblEnvelopeWallElements,dblEnvelopeWindowElements)
+  //console.log(dblEnvelopeWallElements,dblEnvelopeWindowElements)
 
   //Adding Classification Tree
   const tree = await createModelTree()
