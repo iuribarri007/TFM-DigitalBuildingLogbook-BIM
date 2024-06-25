@@ -8,16 +8,12 @@ import { ViewHelper } from "three/examples/jsm/helpers/ViewHelper.js"
 //Local imports
 import { projectPhasesArray} from "../infoProject"
 //Local logic
-
-import { wallEntitiesByLevel, modelEntitiesIdByLevel, dblEnvelopeWallElements, dblEnvelopeWindowElements, dblEnvelopeFloorElements, dblEnvelopeRoofElements } from "./getProps"
-import { floorEntitiesByLevel } from "./getProps"
-import { windowEntitiesByLevel } from "./getProps"
-import { roofEntitiesByLevel } from "./getProps"
-import {modelFragmentIdByLevel} from "./getProps"
-//Trial logic
-import { getEntityFragmentsByLevel } from "./getProps"
-import { getDblEntitiesByLevel } from "./getProps"
-import { classifyEnvelope } from "./getProps"
+import { wallEntitiesByLevel, dblEnvelopeWallElements, dblEnvelopeWindowElements, dblEnvelopeFloorElements, dblEnvelopeRoofElements } from "./getIFCProps"
+import { floorEntitiesByLevel,windowEntitiesByLevel,roofEntitiesByLevel, } from "./getIFCProps"
+import {modelFragmentIdByLevel} from "./getIFCProps"
+//Import logic
+import { getEntityFragmentsByLevel,getDblEntitiesByLevel,classifyEnvelope } from "./getIFCProps"
+import { dblEnvelopeWalls,dblEnvelopeFloors, dblEnvelopeRoofs, dblEnvelopeWindows } from "./getIFCProps"
 //
 const viewer = new OBC.Components()
 const sceneComponent = new OBC.SimpleScene(viewer)
@@ -120,7 +116,7 @@ async function createModelTree(){
   })
  return tree 
 }
-async function loadIfcAsFragments(ifcModelFile) {
+export async function loadIfcAsFragments(ifcModelFile) {
   const file = await fetch(ifcModelFile);
   const data = await file.arrayBuffer();
   const buffer = new Uint8Array(data);
@@ -136,20 +132,21 @@ async function loadIfcAsFragments(ifcModelFile) {
     propertiesProcessor.renderProperties(model,Number(expressID))
   })
   
-  
   //Classify the entities manually
   classifier.byStorey(model)
   const objProp = classifier.get()
   classifier.byStorey(model)
   classifier.byEntity(model)
-
-  //Trying to get the fragments and Id
+  //Get the fragmentIds and ExpressIds
   await getEntityFragmentsByLevel(model,objProp)
   //
   await getDblEntitiesByLevel(model,modelFragmentIdByLevel)
   //
-  await classifyEnvelope(dblEnvelopeWallElements)
+  await classifyEnvelope(dblEnvelopeWallElements,dblEnvelopeFloorElements,dblEnvelopeRoofElements)
 
+  //import { dblEnvelopeWalls,dblEnvelopeFloors, dblEnvelopeRoofs, dblEnvelopeWindows }
+
+ 
   //console.log(dblEnvelopeWallElements,dblEnvelopeWindowElements)
 
   //Adding Classification Tree

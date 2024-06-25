@@ -7,9 +7,9 @@ import { exp, or } from "three/examples/jsm/nodes/Nodes.js"
 //
 import { projectPhasesArray} from './infoProject'
 import { ViewHelper } from "three/examples/jsm/helpers/ViewHelper.js"
-import { classifyEnvelope, getDblEntitiesByLevel } from "./src/getProps"
+import { classifyEnvelope, getDblEntitiesByLevel } from "./src/getIFCProps"
 
-import {dblEnvelopeWallElements, dblEnvelopeWindowElements, dblEnvelopeFloorElements, dblEnvelopeRoofElements} from "./src/getProps"
+import {dblEnvelopeWallElements, dblEnvelopeWindowElements, dblEnvelopeFloorElements, dblEnvelopeRoofElements} from "./src/getIFCProps"
 
 const viewer = new OBC.Components()
 const sceneComponent = new OBC.SimpleScene(viewer)

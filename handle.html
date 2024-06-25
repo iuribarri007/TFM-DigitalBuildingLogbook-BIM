@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handlebars Example</title>
+  <style>
+    table {
+      width: 100%;
+      margin-bottom: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+  <script src="data.js"></script> <!-- Include the data file -->
+</head>
+<body>
+
+  <!-- Placeholder for the generated HTML -->
+  <div id="envelope-container"></div>
+
+  <!-- Handlebars template -->
+  <script id="envelope-template" type="text/x-handlebars-template">
+    {{#each this}}
+      <div class="level">
+        <h2>{{@key}}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Envelope Code</th>
+              <th>Envelope Type</th>
+              <th>Envelope U-Value</th>
+              <th>Envelope Width</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each this}}
+              <tr>
+                <td>{{dblEnvelopeCode}}</td>
+                <td>{{dblEnvelopeType}}</td>
+                <td>{{dblEnvelopeUvalue}}</td>
+                <td>{{dblEnvelopeWidth}}</td>
+              </tr>
+              <tr>
+                <td colspan="4">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Component Express ID</th>
+                        <th>Component Entity Type</th>
+                        <th>Component Envelope Code</th>
+                        <th>Component Type</th>
+                        <th>Component R-Value</th>
+                        <th>Component Width</th>
+                        <th>Component Net Area</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{#each dblEnvelopeComponents}}
+                        <tr>
+                          <td>{{dblComponentExpressId}}</td>
+                          <td>{{dblComponentEntityType}}</td>
+                          <td>{{dblComponentEnvelopeCode}}</td>
+                          <td>{{dblComponentType}}</td>
+                          <td>{{dblComponentRvalue}}</td>
+                          <td>{{dblComponentWidth}}</td>
+                          <td>{{dblComponentNetArea}}</td>
+                        </tr>
+                      {{/each}}
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    {{/each}}
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Compile the template
+      const source = document.getElementById('envelope-template').innerHTML;
+      const template = Handlebars.compile(source);
+
+      // Generate the HTML and insert it into the DOM
+      const html = template(dblEnvelopeWalls);
+      document.getElementById('envelope-container').innerHTML = html;
+    });
+  </script>
+
+</body>
+</html>

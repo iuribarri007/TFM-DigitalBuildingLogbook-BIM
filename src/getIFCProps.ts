@@ -4,48 +4,31 @@ import { Fragment, FragmentsGroup } from "bim-fragment"
 //Import dblEntityinterfaces
 import { dblElementLayerMaterial, dblEntity } from "./dblElementsInterface"
 //Import Wall interfaces
-import { dblWallEntity } from "./dblElementsInterface"
 import { dblWallProps } from "./dblElementsInterface"
-import { dblWallLayer } from "./dblElementsInterface"
 import { dblWallQtos } from "./dblElementsInterface"
 //Import Window interfaces
-import { dblWindowEntity } from "./dblElementsInterface"
 import { dblWindowProps } from "./dblElementsInterface"
-import { dblWindowComponents } from "./dblElementsInterface"
 import { dblWindowQtos } from "./dblElementsInterface"
 //Import Floor interfaces
-import { dblFloorEntity } from "./dblElementsInterface"
 import { dblFloorProps } from "./dblElementsInterface"
-import { dblFloorLayer } from "./dblElementsInterface"
 import { dblFloorQtos } from "./dblElementsInterface"
 //Import Roof interfaces
-import { dblRoofEntity } from "./dblElementsInterface"
 import { dblRoofProps } from "./dblElementsInterface"
-import { dblRoofLayer } from "./dblElementsInterface"
 import { dblRoofQtos } from "./dblElementsInterface"
 import { expression, instance, property } from "three/examples/jsm/nodes/Nodes.js"
-
-
-//Define an object to contain de Ids By level
-export const modelEntitiesIdByLevel:any={}
-//Trial
-export const modelFragmentIdByLevel:any={}
-// Defining a function to check if a value is already present
-
+import { WebGLNodeBuilder } from "three/examples/jsm/renderers/webgl/nodes/WebGLNodeBuilder.js"
 
 interface ModelEntityIdFragment{
   expressId:number
   fragmentIds:[any];
 }
-
-function isIdPresent (array:ModelEntityIdFragment[],id:string|number){
-  return array.some((obj:ModelEntityIdFragment) => obj.expressId == id)
-}
+//
 function checkPresentExpressIdIndex(expressId: number, fragments: ModelEntityIdFragment[]): number {
   return fragments.findIndex(fragment => fragment.expressId === expressId);
 }
-
-
+//
+export const modelFragmentIdByLevel:any={}
+// Defining a function to check if a value is already present
 export async function getEntityFragmentsByLevel(model:FragmentsGroup, obj:any){
   const properties= model.properties
   if(properties===undefined||null){return}
@@ -96,7 +79,6 @@ export async function getEntityFragmentsByLevel(model:FragmentsGroup, obj:any){
       if (modelEntityFragmentLevelArray.length===0){
         delete modelFragmentIdByLevel[modelEntityFragmentLevelArray]} 
   }
-  //console.log("blala",modelFragmentIdByLevel)
 }
 
 //model entitiesObjectbyLevel
@@ -179,9 +161,9 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
     console.log(level)
     //const mPsets = OBC.IfcPropertiesUtils.getAllItemsOfType(properties,WEBIFC.IFCMATERIALPROPERTIES)
     //console.log(mPsets)
-    const dblWallEntitiesLevelArray: any = [];
-    const dblWindowEntitiesLevelArray: any = [];
-    const dblFloorEntitiesLevelArray: any = [];
+    const dblModelWallsLevelArray: any = [];
+    const dblModelWindowsLevelArray: any = [];
+    const dblModelFloorsLevelArray: any = [];
     const dblRoofEntitiesLevelArray: any = [];
     //ExternalLevel Arrays
     const dblExternalWallsLevelArray: any=[];
@@ -281,17 +263,17 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
       let elementType:undefined|string= undefined; let elementLoadBearing: undefined|boolean= undefined; 
       let elementIsExternal:undefined|boolean=undefined; let elementEnvelopeCode:undefined|string= undefined;
       let elementUvalue:undefined|number = undefined; let elementRvalue:undefined| number = undefined;
-      //WallQuantities
+      //WallQtos
       let wallLenght:undefined|number=undefined; let wallWidth:undefined|number=undefined;
       let wallHeight:undefined|number=undefined ;let wallNetSideArea:any|undefined=undefined;
       let wallNetVolume:undefined|number=undefined;
       ///MaterialLayers
       let wallMaterialName= undefined
-      //FloorProperties
+      //FloorQtos
       let floorPerimeter: undefined|number = undefined; let floorWidth: undefined|number= undefined;
       let floorNetArea: undefined|number = undefined; let floorNetVolume: undefined|number;
       //WallProperties
-      let wallEnvelopeOrientation:undefined|string = undefined ;
+      let elementEnvelopeOrientation:undefined|string = undefined ;
       //--------------------------------------------------------------------------------------------------------
       //WindowProperties
       let windowGlazingFraction: undefined|number = undefined; let WindowGvalue: undefined|number = undefined;
@@ -363,7 +345,7 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
                 }
                 if(isWall || isWindow){
                   switch(propertyName){
-                    case "DBL_EnvelopeOrientation": wallEnvelopeOrientation = instancePropValue
+                    case "DBL_EnvelopeOrientation": elementEnvelopeOrientation = instancePropValue
                   }
                 }
                 else if(isWindow){
@@ -378,11 +360,6 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
               for (let q of quantArray){
                 const qId= q.value;
                 const quantity= properties[qId]
-                //console.log("Soy una cantidad",quantity)
-                //if(quantity.type==WEBIFC.IFCPHYSICALCOMPLEXQUANTITY){quantity.HasQuantities.forEach(element => {
-                //  const i=element.value
-                //  console.log("raro",properties[i])
-                //});}
                 const quantityName= quantity.Name.value
                 let quantityValue:any = undefined;
                 for (const key in quantity){
@@ -492,7 +469,7 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
           dblWalLoadBearing: elementLoadBearing,
           dblWallIsExternal: elementIsExternal,
           dblWallEnvelopeCode:elementEnvelopeCode,
-          dblWallEnvelopeOrientation:wallEnvelopeOrientation,
+          dblWallEnvelopeOrientation:elementEnvelopeOrientation,
           dblWallUvalue:elementUvalue,
           dblWallRvalue:elementRvalue,
         }
@@ -511,7 +488,7 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
           materials: dblElementMaterialLayerSet 
           }
         if(elementIsExternal==true){dblExternalWallsLevelArray.push(dblWall)}
-        else {dblWallEntitiesLevelArray.push(dblWall)}
+        else {dblModelWallsLevelArray.push(dblWall)}
         //console.log(expressID,dblWall)
       } 
       else if(isWindow){
@@ -519,7 +496,7 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
           dblWindowType:elementType,
           dblWindowIsExternal:elementIsExternal,
           dblWindowEnvelopeCode:elementEnvelopeCode,
-          dblWindowEnvelopeOrientation:wallEnvelopeOrientation,
+          dblWindowEnvelopeOrientation:elementEnvelopeOrientation,
           dblWindowUvalue:elementUvalue,
           dblWindowGvalue:undefined,
           dblWindowGlazingFraction:undefined,
@@ -537,7 +514,7 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
           qtos: dblWindowQtos,
         }
         if(elementIsExternal===true){dblExternalWindowsLevelArray.push(dblWindow)}
-        else{dblWindowEntitiesLevelArray.push(dblWindow)}
+        else{dblModelWindowsLevelArray.push(dblWindow)}
         //console.log(expressID,dblWindow)
       } 
       else if(isFloor){
@@ -563,7 +540,7 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
           materials: dblElementMaterialLayerSet
         }
         if(elementIsExternal==true){dblExternalFloorsLevelArray.push(dblFloor)}
-        else(dblFloorEntitiesLevelArray.push(dblFloor))
+        else(dblModelFloorsLevelArray.push(dblFloor))
         //console.log("Floor",expressID,dblFloor)
       } 
       else if(isRoof){
@@ -597,19 +574,17 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
         //console.log(expressID,dblRoof)
       }
     }
-    //if(dblWallEntitiesLevelArray.length!==0){dblWallElements[level] = dblWallEntitiesLevelArray}
+    if(dblModelWallsLevelArray.length!==0){dblWallElements[level] = dblModelWallsLevelArray}
     if(dblExternalWallsLevelArray.length!==0){dblEnvelopeWallElements[level] = dblExternalWallsLevelArray}
 
-    //if(dblWindowEntitiesLevelArray.length!==0){dblWindowElements[level] = dblWindowEntitiesLevelArray}
+    if(dblModelWindowsLevelArray.length!==0){dblWindowElements[level] = dblModelWindowsLevelArray}
     if(dblExternalWindowsLevelArray.length!==0){dblEnvelopeWindowElements[level] = dblExternalWindowsLevelArray}
 
-    //if(dblFloorEntitiesLevelArray.length!==0){dblFloorElements[level]=dblFloorEntitiesLevelArray}
+    if(dblModelFloorsLevelArray.length!==0){dblFloorElements[level]=dblModelFloorsLevelArray}
     if(dblExternalFloorsLevelArray.length!==0){dblEnvelopeFloorElements[level] = dblExternalFloorsLevelArray}
 
-    //if(dblRoofEntitiesLevelArray.length!==0){dblRoofElements[level]=dblRoofEntitiesLevelArray}
+    if(dblRoofEntitiesLevelArray.length!==0){dblRoofElements[level]=dblRoofEntitiesLevelArray}
     if(dblExternalRoofsLevelArray.length!==0){dblEnvelopeRoofElements[level] = dblExternalRoofsLevelArray}
-    
-    //Create an array per each level
     
   } 
   console.log("DBLExternalWalls",dblEnvelopeWallElements)
@@ -617,9 +592,12 @@ export async function getDblEntitiesByLevel(model:FragmentsGroup,obj:any){
   console.log("DBLExternalFloors",dblEnvelopeFloorElements)
   console.log("DBLExternalRoofs",dblEnvelopeRoofElements)
 }
-const dblEnvelopeWalls:any ={}
+export const dblEnvelopeWalls:any = {}
+export const dblEnvelopeFloors:any = {}
+export const dblEnvelopeWindows:any = {}
+export const dblEnvelopeRoofs:any = {}
 
-interface dblEnvelopeComponent{
+interface dblVerticalEnvelopeComponent{
   dblComponentExpressId:string|undefined,
   dblComponentEntityType:number|undefined
   dblComponentEnvelopeCode:string|undefined
@@ -629,7 +607,7 @@ interface dblEnvelopeComponent{
   dblComponentWidth: number|undefined,
   dblComponentNetArea: number|undefined,
 }
-interface dblLayeredEnvelope{
+interface dblVerticalLayeredEnvelope{
   dblEnvelopeCode:string|undefined,
   dblEnvelopeType:string|undefined,
   dblEnvelopeUvalue:number|undefined,
@@ -638,25 +616,50 @@ interface dblLayeredEnvelope{
   dblEnvelopeOrientation:string|undefined
   dblEnvelopeComponents:any[] 
 }
+interface dblHorizontalEnvelopeComponent{
+  dblComponentExpressId:string|undefined,
+  dblComponentEntityType:number|undefined
+  dblComponentEnvelopeCode:string|undefined
+  dblComponentType: string|undefined,
+  dblComponentRvalue: number|undefined, 
+  dblComponentWidth: number|undefined,
+  dblComponentNetArea: number|undefined,
+}
+interface dblHorizontalLayeredEnvelope{
+  dblEnvelopeCode:string|undefined,
+  dblEnvelopeType:string|undefined,
+  dblEnvelopeUvalue:number|undefined,
+  dblEnvelopeWidth:number|undefined,
+  dblEnvelopeArea:number|undefined,
+  dblEnvelopeComponents:any[] 
+}
 //
 function checkEnvelopeValue(envelopeValue:string, array:any[]){
   return array.findIndex( dblElement => dblElement.dblEnvelopeCode === envelopeValue)
 }
 //
 export async function classifyEnvelope(...obj){
-  obj.forEach( obj => {
+  obj.forEach ( obj => {
     for (const level in obj){
       const dblLevel= obj[level]
       const dblEnvelopeWallLevelArray: any=[];
       const dblEnvelopeWindowsLevelArray: any=[];
-      const dblEnvelopeFloorsLevelArray: any=[];
-      const dblEnvelopeRoofsLevelArray: any=[];
+      const dblEnvelopeFloorLevelArray: any=[];
+      const dblEnvelopeRoofLevelArray: any=[];
+
       for (const e in dblLevel){
         const dblElement = dblLevel[e]
         const componentEntityType= dblElement.entity.entityType
-        if(componentEntityType===WEBIFC.IFCWALL||componentEntityType===WEBIFC.IFCWALLSTANDARDCASE||componentEntityType===WEBIFC.IFCCURTAINWALL){
+        const componentExpressId = dblElement.entity.expressId
+
+        const isWall = componentEntityType===WEBIFC.IFCWALL||componentEntityType===WEBIFC.IFCWALLSTANDARDCASE||
+        componentEntityType===WEBIFC.IFCCURTAINWALL || componentEntityType===WEBIFC.IFCWALLELEMENTEDCASE;
+        const isWindow = componentEntityType ===WEBIFC.IFCWINDOW 
+        const isFloor = componentEntityType === WEBIFC.IFCSLAB || componentEntityType === WEBIFC.IFCSLABSTANDARDCASE
+        const isRoof = componentEntityType === WEBIFC.IFCROOF   
+        //
+        if(isWall){
           const envelopeCode= dblElement.props.dblWallEnvelopeCode
-          const componentExpressId = dblElement.entity.expressId
           const componentType= dblElement.props.dblWallType
           const componentEnvelopeCode = dblElement.props.dblWallEnvelopeCode
           const componentRvalue= dblElement.props.dblWallRvalue
@@ -664,7 +667,7 @@ export async function classifyEnvelope(...obj){
           const componentNetArea= dblElement.qtos.dblWallNetArea
           const componentOrientation = dblElement.props.dblWallEnvelopeOrientation
           //
-          const dblEnvelopeComponent:dblEnvelopeComponent={
+          const dblEnvelopeComponent:dblVerticalEnvelopeComponent={
             dblComponentExpressId:componentExpressId,
             dblComponentEntityType:componentEntityType,
             dblComponentEnvelopeCode:componentEnvelopeCode,
@@ -674,7 +677,7 @@ export async function classifyEnvelope(...obj){
             dblComponentWidth: componentWidth,
             dblComponentNetArea: componentNetArea,
           }
-          const dblEnvelopeWall:dblLayeredEnvelope ={
+          const dblEnvelopeWall:dblVerticalLayeredEnvelope ={
             dblEnvelopeCode: envelopeCode,
             dblEnvelopeType: undefined,
             dblEnvelopeUvalue:undefined,
@@ -693,13 +696,59 @@ export async function classifyEnvelope(...obj){
           //  
           }
           else {
-            //console.log("no está", envelopeIndex)
             dblEnvelopeWallLevelArray.push(dblEnvelopeWall)
             dblEnvelopeWall.dblEnvelopeComponents.push(dblEnvelopeComponent)
-          }
-          
+          }    
         }
-        else if(componentEntityType===WEBIFC.IFCSLAB||componentEntityType===WEBIFC.IFCSLABSTANDARDCASE||componentEntityType===WEBIFC.IFCSLABELEMENTEDCASE){
+        else if(isFloor || isRoof){
+          const envelopeCode= dblElement.props.dblFloorEnvelopeCode
+          const componentType= dblElement.props.dblFloorType
+          const componentEnvelopeCode = dblElement.props.dblFloorEnvelopeCode
+          const componentRvalue= dblElement.props.dblFloorRvalue
+          const componentWidth= dblElement.qtos.dblFloorWidth
+          const componentNetArea= dblElement.qtos.dblFloorNetArea
+
+          const dblEnvelopeHorizontalComponent:dblHorizontalEnvelopeComponent={
+            dblComponentExpressId:componentExpressId,
+            dblComponentEntityType:componentEntityType,
+            dblComponentEnvelopeCode:componentEnvelopeCode,
+            dblComponentType: componentType,
+            dblComponentRvalue: componentRvalue, 
+            dblComponentWidth: componentWidth,
+            dblComponentNetArea: componentNetArea,
+          }
+          const dblEnvelopeHorizontal:dblHorizontalLayeredEnvelope ={
+            dblEnvelopeCode: envelopeCode,
+            dblEnvelopeType: undefined,
+            dblEnvelopeUvalue:undefined,
+            dblEnvelopeWidth:undefined,
+            dblEnvelopeArea:undefined,
+            dblEnvelopeComponents: []
+          }
+          if(isFloor){
+            const envelopeIndex= checkEnvelopeValue(envelopeCode,dblEnvelopeFloorLevelArray)
+            const targetElement= dblEnvelopeFloorLevelArray[envelopeIndex]
+            if(envelopeIndex !== -1 && targetElement!==undefined){ 
+              targetElement.dblEnvelopeComponents.push(dblEnvelopeHorizontalComponent)
+            }
+            else {
+              dblEnvelopeFloorLevelArray.push(dblEnvelopeHorizontal)
+              dblEnvelopeHorizontal.dblEnvelopeComponents.push(dblEnvelopeHorizontalComponent)
+            }
+          }
+          else if (isRoof){
+            const envelopeIndex= checkEnvelopeValue(envelopeCode,dblEnvelopeRoofLevelArray)
+            const targetElement= dblEnvelopeRoofLevelArray[envelopeIndex]
+            if(envelopeIndex !== -1 && targetElement!==undefined){ 
+              targetElement.dblEnvelopeComponents.push(dblEnvelopeHorizontalComponent)
+            }
+            else {
+              dblEnvelopeRoofLevelArray.push(dblEnvelopeHorizontal)
+              dblEnvelopeHorizontal.dblEnvelopeComponents.push(dblEnvelopeHorizontalComponent)
+            }
+          }
+        }
+        else if (isWindow){
 
         }
       }
@@ -708,8 +757,8 @@ export async function classifyEnvelope(...obj){
         for (const envelopeWall of dblEnvelopeWallLevelArray){
           const componentArray= envelopeWall.dblEnvelopeComponents
           const concatenatedTypes = componentArray.map(component => component.dblComponentType).join ("+")
-          const envelopeWidth: number = componentArray.reduce((sum, component) => sum + component.dblComponentWidth, 0);
-          const envelopeRvalue:number = componentArray.reduce((sum, component) => sum + component.dblComponentRvalue, 0);
+          const envelopeWidth: number = componentArray.reduce((sum:number, component) => sum + component.dblComponentWidth, 0);
+          const envelopeRvalue:number = componentArray.reduce((sum:number, component) => sum + component.dblComponentRvalue, 0);
           
           envelopeWall.dblEnvelopeType = concatenatedTypes
           envelopeWall.dblEnvelopeWidth = parseFloat(envelopeWidth.toFixed(2))
@@ -717,10 +766,42 @@ export async function classifyEnvelope(...obj){
           
         }
       }
+      if(dblEnvelopeFloorLevelArray.length!==0){
+        dblEnvelopeFloors[level] = dblEnvelopeFloorLevelArray
+        for (const envelopeFloor of dblEnvelopeFloorLevelArray){
+          const componentArray= envelopeFloor.dblEnvelopeComponents
+          const concatenatedTypes = componentArray.map(component => component.dblComponentType).join ("+")
+          const envelopeWidth: number = componentArray.reduce((sum:number, component) => sum + component.dblComponentWidth, 0);
+          const envelopeRvalue:number = componentArray.reduce((sum:number, component) => sum + component.dblComponentRvalue, 0);
+          
+          envelopeFloor.dblEnvelopeType = concatenatedTypes
+          envelopeFloor.dblEnvelopeWidth = parseFloat(envelopeWidth.toFixed(2))
+          envelopeFloor.dblEnvelopeUvalue = 1/(parseFloat(envelopeRvalue.toFixed(2)))
+          
+        }
+      }
+      if(dblEnvelopeRoofLevelArray.length!==0){
+        dblEnvelopeRoofs[level] = dblEnvelopeRoofLevelArray
+        for (const envelopeRoof of dblEnvelopeFloorLevelArray){
+          const componentArray= envelopeRoof.dblEnvelopeComponents
+          const concatenatedTypes = componentArray.map(component => component.dblComponentType).join ("+")
+          const envelopeWidth: number = componentArray.reduce((sum:number, component) => sum + component.dblComponentWidth, 0);
+          const envelopeRvalue:number = componentArray.reduce((sum:number, component) => sum + component.dblComponentRvalue, 0);
+          
+          envelopeRoof.dblEnvelopeType = concatenatedTypes
+          envelopeRoof.dblEnvelopeWidth = parseFloat(envelopeWidth.toFixed(2))
+          envelopeRoof.dblEnvelopeUvalue = 1/(parseFloat(envelopeRvalue.toFixed(2)))
+          
+        }
+      }
+      
+
     }
   }
 )
 console.log(dblEnvelopeWalls)
+console.log(dblEnvelopeFloors)
+console.log(dblEnvelopeRoofs)
 }
 
 

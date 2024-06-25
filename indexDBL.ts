@@ -43,6 +43,6 @@ interface Subcategory {
     existingIndicator.remove();
   }
 
-generateTable(a2)
+//generateTable(a2)
 
 
